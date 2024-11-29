@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Dynamic DataTable</h1>
+<table id="dynamicTable" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            var table = $('#dynamicTable').DataTable({
+                ajax: {
+                    url: '/Home/GetTableData', // URL to your controller action
+                    type: 'POST',              // HTTP method
+                    dataSrc: function (json) {
+                        console.log('json', json)
+                        // Build header dynamically
+                        var columns = json.columns.map(function (col) {
+                            return { title: col.colName, data: col };
+                        });
+
+                        var rows = json.rows;
+
+                        // Update table columns
+                        table.clear();
+                        table.destroy();
+                        $('#dynamicTable thead').empty();
+                        $(`#dynamicTable tbody`).empty();
+
+                        // Dynamically create the header
+                        var headerHtml = "";
+                        columns.forEach(function (column) {
+                            headerHtml += `<th>${column.title}</th>`;
+                        });
+                        $('#dynamicTable thead').html('<tr>' + headerHtml + '</tr>');
+
+                        // Dynamically append rows to tbody
+                        rows.forEach(function (row) {
+                            var rowHtml = "<tr>";
+                            columns.forEach(function (column) {
+                                rowHtml += `<td>${row[column.title]}</td>`;
+                            });
+                            rowHtml += "</tr>";
+
+                            // Append row to tbody
+                            $('#dynamicTable tbody').append(rowHtml);
+                        });
+                            // Reinitialize DataTable with new columns
+                        table = $('#dynamicTable').DataTable();
+                    }
+                },
+                processing: true,
+                serverSide: false
+            });
+        });
+    </script>
+
+}
