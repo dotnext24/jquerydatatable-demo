@@ -28,3 +28,4 @@ d:\Projects\jquerydatatable-demo\obj\Debug\net8.0\refint\jquerydatatable-demo.dl
 d:\Projects\jquerydatatable-demo\obj\Debug\net8.0\jquerydatatable-demo.pdb
 d:\Projects\jquerydatatable-demo\obj\Debug\net8.0\jquerydatatable-demo.genruntimeconfig.cache
 d:\Projects\jquerydatatable-demo\obj\Debug\net8.0\ref\jquerydatatable-demo.dll
+D:\Projects\jquerydatatable-demo\obj\Debug\net8.0\jquerydatatable-demo.sourcelink.json

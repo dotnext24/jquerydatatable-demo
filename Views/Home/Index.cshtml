@@ -22,9 +22,7 @@
                     dataSrc: function (json) {
                         console.log('json', json)
                         // Build header dynamically
-                        var columns = json.columns.map(function (col) {
-                            return { title: col.colName, data: col };
-                        });
+                        var columns = json.columns;
 
                         var rows = json.rows;
 
@@ -37,7 +35,7 @@
                         // Dynamically create the header
                         var headerHtml = "";
                         columns.forEach(function (column) {
-                            headerHtml += `<th>${column.title}</th>`;
+                            headerHtml += `<th>${column.colName}</th>`;
                         });
                         $('#dynamicTable thead').html('<tr>' + headerHtml + '</tr>');
 
@@ -45,7 +43,7 @@
                         rows.forEach(function (row) {
                             var rowHtml = "<tr>";
                             columns.forEach(function (column) {
-                                rowHtml += `<td>${row[column.title]}</td>`;
+                                rowHtml += `<td>${row[column.colName]}</td>`;
                             });
                             rowHtml += "</tr>";
 

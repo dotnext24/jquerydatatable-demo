@@ -34,8 +34,6 @@ public class HomeController : Controller
     public IActionResult GetTableData()
     {
         // Define dynamic columns
-        //var columns = new List<string> { "id", "name", "dob", "city" };
-
         var columns = new List<Column>
         {
             new Column { Id = 1, ColName = "Id", DataType = "int" },
@@ -52,26 +50,31 @@ public class HomeController : Controller
             new { Id = 3, Name = "Mike Johnson", Dob = "1985/09/18", City = "Chicago" }
         };
 
-        var rows = new List<object>();
-        
-        
-       foreach (var item in rowsRaw)
+       for (int i = 4; i < 10000; i++)
        {
-        dynamic row = new ExpandoObject();
-         foreach (var col in columns)
-         {
-                var colValue = item.GetType()?.GetProperty(col.ColName)?.GetValue(item,null);
+        rowsRaw.Add(new { Id = i, Name = "John Doe"+" "+i, Dob = "1995/06/12", City = "New York" });
+       }
+
+        var rows = new List<object>();
+
+
+        foreach (var item in rowsRaw)
+        {
+            dynamic row = new ExpandoObject();
+            foreach (var col in columns)
+            {
+                var colValue = item.GetType()?.GetProperty(col.ColName)?.GetValue(item, null);
                 switch (col.DataType.ToLower())
                 {
                     case "int":
-                    ((IDictionary<string, object>)row).Add(col.ColName, Convert.ToInt32(colValue!));
-                    break;                    
+                        ((IDictionary<string, object>)row).Add(col.ColName, Convert.ToInt32(colValue!));
+                        break;
                     case "datetime":
-                    ((IDictionary<string, object>)row).Add(col.ColName, Convert.ToDateTime(colValue!));
-                    break;
+                        ((IDictionary<string, object>)row).Add(col.ColName, Convert.ToDateTime(colValue!));
+                        break;
                     default:
-                    ((IDictionary<string, object>)row).Add(col.ColName, colValue!);
-                    break;
+                        ((IDictionary<string, object>)row).Add(col.ColName, colValue!);
+                        break;
                 };
             }
             rows.Add(row);
