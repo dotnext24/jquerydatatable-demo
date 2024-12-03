@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1>Dynamic DataTable</h1>
+<table id="dynamicTable" class="display" style="width:100%">
+   
+</table>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+    $.ajax({
+        url: '/Home/GetPagintedTableData', // Endpoint to fetch column metadata and data
+        type: 'POST',
+        dataType: 'json',
+        success: function (response) {
+            // Initialize DataTable with dynamic columns and server-side processing
+            $('#dynamicTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '/Home/GetPagintedTableData', // Same endpoint for server-side processing
+                    type: 'POST'
+                },
+                columns: response.columns.map(col => ({title:col.colName.toLowerCase(), data:col.colName.toLowerCase()})), // Use dynamic columns from server response
+                // Optional: Customize processing messages
+                language: {
+                    processing: "Loading data, please wait..."
+                }
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error("Error fetching dynamic data:", error);
+        }
+    });
+});
+
+    </script>
+
+
+}

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("jquerydatatable-demo")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5a0ca1dc15528cc165c645b6a2b39d37a1022aa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b97a458ca5ed0e630065f46ae7ae8b81340a382f")]
 [assembly: System.Reflection.AssemblyProductAttribute("jquerydatatable-demo")]
 [assembly: System.Reflection.AssemblyTitleAttribute("jquerydatatable-demo")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
