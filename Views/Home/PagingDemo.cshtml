@@ -36,7 +36,16 @@
                                 d.columnFilter = $('#columnFilter').val();
                             },
                         },
-                        columns: response.columns.map(col => ({ title: col.colName, data: col.colName })), // Use dynamic columns from server response
+                        columns: response.columns.map((col, idx) => {
+                            const column = { title: col.colName, data: col.colName };
+                            if (idx == 0)
+                                column.render = function (data, type, row) {
+                                    // 'row.url' contains the URL for the hyperlink
+                                    return `<a href="#">${data}</a>`;
+                                };
+                            return column;
+
+                        }), // Use dynamic columns from server response
                         // Optional: Customize processing messages
                         language: {
                             search: '', // Remove the default "Search" label
