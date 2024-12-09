@@ -4,36 +4,63 @@
 
 <h1>Dynamic DataTable</h1>
 <table id="dynamicTable" class="display" style="width:100%">
-   
+
 </table>
+<style>
+    #dynamicTable_filter {
+        display: flex;
+        align-items: center;
+    }
+
+    #columnFilter {
+        width: 100px;
+    }
+</style>
 @section Scripts {
     <script>
         $(document).ready(function () {
-    $.ajax({
-        url: '/Home/GetPagintedTableData', // Endpoint to fetch column metadata and data
-        type: 'POST',
-        dataType: 'json',
-        success: function (response) {
-            // Initialize DataTable with dynamic columns and server-side processing
-            $('#dynamicTable').DataTable({
-                serverSide: true,
-                processing: true,
-                ajax: {
-                    url: '/Home/GetPagintedTableData', // Same endpoint for server-side processing
-                    type: 'POST'
+            $.ajax({
+                url: '/Home/GetPagintedTableData', // Endpoint to fetch column metadata and data
+                type: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    // Initialize DataTable with dynamic columns and server-side processing
+                    var table = $('#dynamicTable').DataTable({
+                        serverSide: true,
+                        processing: true,
+                        ajax: {
+                            url: '/Home/GetPagintedTableData', // Same endpoint for server-side processing
+                            type: 'POST',
+                            data: function (d) {
+                                // Include the selected office in the request
+                                d.columnFilter = $('#columnFilter').val();
+                            },
+                        },
+                        columns: response.columns.map(col => ({ title: col.colName, data: col.colName })), // Use dynamic columns from server response
+                        // Optional: Customize processing messages
+                        language: {
+                            search: '', // Remove the default "Search" label
+                            searchPlaceholder: 'Search...',
+                            processing: "Loading data, please wait..."
+                        }
+                    });
+
+                    var selectHtml = '<select id="columnFilter" class="form-select">';
+                    $.each(response.columns, function (index, value) {
+                        selectHtml += `<option value="${value.colName}">${value.colName}</option>`;
+                    });
+                    selectHtml += '</select>';
+
+                    $('#dynamicTable_filter').prepend(selectHtml);
+                    $('#dynamicTable_filter').on('change', function () {
+                        table.ajax.reload(); // Reload DataTable with the new filter value
+                    });
                 },
-                columns: response.columns.map(col => ({title:col.colName.toLowerCase(), data:col.colName.toLowerCase()})), // Use dynamic columns from server response
-                // Optional: Customize processing messages
-                language: {
-                    processing: "Loading data, please wait..."
+                error: function (xhr, status, error) {
+                    console.error("Error fetching dynamic data:", error);
                 }
             });
-        },
-        error: function (xhr, status, error) {
-            console.error("Error fetching dynamic data:", error);
-        }
-    });
-});
+        });
 
     </script>
 

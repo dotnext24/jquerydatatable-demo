@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using jquerydatatable_demo.Models;
 using System.Dynamic;
 using System.Globalization;
+using System.Data;
+using System.Linq;
 
 namespace jquerydatatable_demo.Controllers;
 
@@ -103,14 +105,23 @@ public class HomeController : Controller
             : string.Empty;
         string sortDirection = form.ContainsKey("order[0][dir]") ? form["order[0][dir]"].ToString() : "asc";
 
+
+        var dataset = GetDataSet();
+        
         // Define dynamic columns
-        var columnsRaw = new List<Column>
+        var columnsRaw = new List<Column>();        
+
+        var columnsDict=GetListFromDataSet(dataset.Tables[0]);
+
+        foreach (var item in columnsDict)
         {
-            new Column { Id = 1, ColName = "Id", DataType = "int" },
-            new Column { Id = 2, ColName = "Name", DataType = "varchar" },
-            new Column { Id = 3, ColName = "Dob", DataType = "datetime" },
-            new Column { Id = 4, ColName = "City", DataType = "varchar" }
-        };
+            var col = new Column();
+            var dictionary = item as Dictionary<string, object>;
+            col.Id = (int)dictionary!.GetValueOrDefault("Id", -1);
+            col.ColName = dictionary!.GetValueOrDefault("ColName", "").ToString() ?? "";
+            col.DataType = dictionary!.GetValueOrDefault("DataType", "").ToString() ?? "";
+            columnsRaw.Add(col);
+        }
 
         // Define dynamic rows
         var rowsRaw = new List<object>
@@ -120,10 +131,7 @@ public class HomeController : Controller
             new { Id = 3, Name = "Mike Johnson", Dob = "1985/09/18", City = "Chicago" }
         };
 
-        for (int i = 4; i < 10000; i++)
-        {
-            rowsRaw.Add(new { Id = i, Name = "John Doe" + " " + i, Dob = "1995/06/12", City = "New York" });
-        }
+        rowsRaw = GetListFromDataSet(dataset.Tables[1]);
 
 
         // Filter data
@@ -134,8 +142,8 @@ public class HomeController : Controller
         {
             sortColumn = new CultureInfo("en-US").TextInfo.ToTitleCase(sortColumn);
             filteredData = sortDirection == "asc"
-                ? filteredData.OrderBy(d => d.GetType().GetProperty(sortColumn)?.GetValue(d)).ToList()
-                : filteredData.OrderByDescending(d => d.GetType().GetProperty(sortColumn)?.GetValue(d)).ToList();
+                ? filteredData.OrderBy(d => ((IDictionary<string, object>)d)[sortColumn]).ToList()
+                : filteredData.OrderByDescending(d => ((IDictionary<string, object>)d)[sortColumn]).ToList();
         }
 
         var rows = new List<object>();
@@ -143,10 +151,11 @@ public class HomeController : Controller
 
         foreach (var item in filteredData)
         {
+             var dictionary = item as Dictionary<string, object>;
             dynamic row = new ExpandoObject();
             foreach (var col in columnsRaw)
             {
-                var colValue = item.GetType()?.GetProperty(col.ColName)?.GetValue(item, null);
+                var colValue =dictionary?[col.ColName]??"";
                 switch (col.DataType.ToLower())
                 {
                     case "int":
@@ -187,20 +196,59 @@ public class HomeController : Controller
 
         return list.Where(item =>
         {
+           var dictionary= item as Dictionary<string, object>;
             // Check all properties of the object
-            var properties = item.GetType().GetProperties();
-            foreach (var property in properties)
-            {
-                var propertyValue = property.GetValue(item)?.ToString();
-                if (!string.IsNullOrEmpty(propertyValue) &&
-                    propertyValue.Contains(searchValue, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true; // If any property contains the search value, include the item
-                }
-            }
-            return false; // Exclude the item if no properties match
+           return dictionary.Any(kv => (kv.Value??"").ToString().ToLower().Contains(searchValue.ToLower()));
+ // Exclude the item if no properties match
         });
     }
 
+    private List<object> GetListFromDataSet(DataTable dataTable)
+    {
+        List<object> result = new List<object>();
+        var columns = dataTable.Columns;
+
+        foreach (DataRow row in dataTable.Rows)
+        {
+            Dictionary<string, object> rowData = new Dictionary<string, object>();
+
+            foreach (var columnName in columns)
+            {
+                rowData[columnName.ToString()] = row[columnName.ToString()];
+            }
+            result.Add(rowData);
+        }
+        return result;
+    }
+
+    private DataSet GetDataSet()
+    {
+        DataSet dataSet = new DataSet();
+        //columns
+        DataTable columnsTable = new DataTable("columnsTable");
+        columnsTable.Columns.Add("Id", typeof(int));
+        columnsTable.Columns.Add("ColName", typeof(string));
+        columnsTable.Columns.Add("DataType", typeof(string));
+        columnsTable.Rows.Add(1, "Id", "int");
+        columnsTable.Rows.Add(1, "Name", "varchar");
+        columnsTable.Rows.Add(1, "Dob", "datetime");
+        columnsTable.Rows.Add(1, "City", "varchar");
+        dataSet.Tables.Add(columnsTable);
+
+        DataTable rowsTable = new DataTable("rowsTable");
+        rowsTable.Columns.Add("Id", typeof(int));
+        rowsTable.Columns.Add("Name", typeof(string));
+        rowsTable.Columns.Add("Dob", typeof(DateTime));
+        rowsTable.Columns.Add("City", typeof(string));
+
+        for (int i = 1; i <= 10000; i++)
+        {
+            rowsTable.Rows.Add(i, "John Doe" + " " + i, "1995/06/12", "New York");
+        }
+
+        dataSet.Tables.Add(rowsTable);
+
+        return dataSet;
+    }
 
 }
