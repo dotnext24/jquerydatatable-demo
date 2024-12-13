@@ -1,0 +1,49 @@
+@model FormViewModel
+
+<form id="editFormDetails" >
+    <div class="row">
+        <input id="id" name="id" type="hidden" value="@Model.Id" /> 
+         <input id="tableName" name="tableName" type="hidden" value="@Model.TableName" /> 
+        @foreach (var field in Model.Fields)
+        {
+            <div class="col-md-4"> <!-- Each column takes 1/3 of the row (12/3 = 4) -->
+                <div class="form-group">
+                    <label for="@field.Name">@field.Label</label>
+
+                    @if (field.Type == "text")
+                    {
+                        <input type="text" id="@field.Name" name="@field.Name" data-datatype="@field.DataType" class="form-control" placeholder="@field.Placeholder" value="@field.Value" />
+                    }
+                    else if (field.Type == "number")
+                    {
+                        <input type="number" id="@field.Name" name="@field.Name" data-datatype="@field.DataType" class="form-control" placeholder="@field.Placeholder" value="@field.Value" />
+                    }
+                    else if (field.Type == "date")
+                    {
+                        <input type="date" id="@field.Name" name="@field.Name" data-datatype="@field.DataType" class="form-control" value="@field.Value" />
+                    }
+                    else if (field.Type == "dropdown")
+                    {
+                        <select id="@field.Name" name="@field.Name" data-datatype="@field.DataType" class="form-control">
+                            @foreach (var option in field.Options)
+                            {
+                                <option value="@option" >@option</option>
+                            }
+                        </select>
+                    }                    
+
+                    @if (field.IsRequired)
+                    {
+                        <span class="text-danger">*</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <button id="saveBtn" type="button" class="btn btn-primary">Submit</button>
+    <button id="cancelBtn" type="button" class="btn btn-secondary">Cancel</button>
+</form>
+
+
+
+

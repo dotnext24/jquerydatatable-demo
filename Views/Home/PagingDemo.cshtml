@@ -41,7 +41,7 @@
                             if (idx == 0)
                                 column.render = function (data, type, row) {
                                     // 'row.url' contains the URL for the hyperlink
-                                    return `<a href="#">${data}</a>`;
+                                    return `<a href="/Home/EditCFG/${data}">${data}</a>`;
                                 };
                             return column;
 
@@ -72,6 +72,4 @@
         });
 
     </script>
-
-
 }

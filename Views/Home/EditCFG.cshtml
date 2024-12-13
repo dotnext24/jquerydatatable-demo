@@ -1,0 +1,56 @@
+@model jquerydatatable_demo.Models.FormViewModel
+<h2>@Model.FormName</h2>
+
+<!-- Render the partial view -->
+@{
+    await Html.RenderPartialAsync("_DynamicForm", Model);
+}
+
+
+
+@section Scripts {
+  <script>
+    $(document).ready(function () {
+        // Save button click event
+        $('#saveBtn').on('click', function () {
+            console.log("form")
+            const updatedRow = {
+                data:{}
+            };
+            $('#editFormDetails')
+                .serializeArray()
+                .forEach(field => {
+                        if (field.name == "id" || field.name == "tableName")
+                            updatedRow[field.name] = field.value;
+                            else
+                             updatedRow.data[field.name] = field.value; 
+                });
+
+            $.ajax({
+                url: '@Url.Action("EditCFGPost","Home")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedRow),
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        @* $('#editForm').remove(); // Remove the edit form after saving
+                        location.reload(); // Reload the DataTable *@
+                    } else {
+                        alert("Error: " + response.message);
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while updating the row.");
+                }
+            });
+        });
+
+        // Cancel button click event
+        $('#cancelBtn').on('click', function () {
+            $('#editForm').remove(); // Remove the edit form
+        });
+    });
+</script>
+}
+

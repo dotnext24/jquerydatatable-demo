@@ -106,7 +106,7 @@ public class HomeController : Controller
         string sortDirection = form.ContainsKey("order[0][dir]") ? form["order[0][dir]"].ToString() : "asc";
 
 
-        var dataset = GetDataSet();
+        var dataset = GetDataSet(null);
         
         // Define dynamic columns
         var columnsRaw = new List<Column>();        
@@ -189,6 +189,60 @@ public class HomeController : Controller
         });
     }
 
+    public IActionResult EditCFG(int? id)
+    {
+        var dataset = GetDataSet(id);
+        var columnsDict = GetListFromDataSet(dataset.Tables[0]);
+        var rowsDict = GetListFromDataSet(dataset.Tables[1]);
+
+        var model = new FormViewModel();
+        model.FormName = "Edit CFG";
+        model.TableName="table1";
+        model.Id= id!.ToString();
+        model.Fields = new List<FormField>();
+
+        foreach (var item in columnsDict)
+        {
+             var dictionary = item as Dictionary<string, object>;
+             var colName = dictionary!.GetValueOrDefault("ColName", "").ToString() ?? "";
+             var dataType = dictionary!.GetValueOrDefault("DataType", "").ToString() ?? "";
+             var formField= new FormField { Name = colName, Label = colName, IsRequired = true, Placeholder = "Enter "+colName };
+              switch (dataType.ToLower())
+                {
+                    case "int":
+                        formField.Type="number";
+                        break;
+                    case "datetime":
+                        formField.Type="date";
+                        break;
+                    default:
+                        formField.Type="text";
+                        break;
+                };
+                
+            formField.DataType=dataType;
+            model.Fields.Add(formField);
+        }
+
+        model.Fields.Add(new FormField { Name = "Country", Label = "Country", Type = "dropdown", IsRequired = true, Options = new List<string> { "USA", "Canada", "UK", "Australia" } });
+        return View(model);
+    }
+    
+    [HttpPost]
+    public IActionResult EditCFGPost([FromBody]SubmitFormData formData)
+    {
+
+        var table = new DataTable();
+                    table.Columns.Add("ColumnName", typeof(string));
+                    table.Columns.Add("ColumnValue", typeof(string));
+
+        foreach (var item in formData?.Data!)
+        {
+          table.Rows.Add(item.Key, item.Value?.ToString());
+        }
+
+        return Content("Sucess");
+    }
     private IEnumerable<object> Filter(List<object> list, string searchValue)
     {
         if (string.IsNullOrEmpty(searchValue))
@@ -198,7 +252,7 @@ public class HomeController : Controller
         {
            var dictionary= item as Dictionary<string, object>;
             // Check all properties of the object
-           return dictionary.Any(kv => (kv.Value??"").ToString().ToLower().Contains(searchValue.ToLower()));
+            return dictionary.Any(kv => (kv.Value ?? "").ToString().ToLower().Contains(searchValue.ToLower()));
  // Exclude the item if no properties match
         });
     }
@@ -221,7 +275,7 @@ public class HomeController : Controller
         return result;
     }
 
-    private DataSet GetDataSet()
+    private DataSet GetDataSet(int? id)
     {
         DataSet dataSet = new DataSet();
         //columns
@@ -230,9 +284,10 @@ public class HomeController : Controller
         columnsTable.Columns.Add("ColName", typeof(string));
         columnsTable.Columns.Add("DataType", typeof(string));
         columnsTable.Rows.Add(1, "Id", "int");
-        columnsTable.Rows.Add(1, "Name", "varchar");
-        columnsTable.Rows.Add(1, "Dob", "datetime");
-        columnsTable.Rows.Add(1, "City", "varchar");
+        columnsTable.Rows.Add(2, "Name", "varchar");
+        columnsTable.Rows.Add(3, "Dob", "datetime");
+        columnsTable.Rows.Add(4, "City", "varchar");
+        
         dataSet.Tables.Add(columnsTable);
 
         DataTable rowsTable = new DataTable("rowsTable");
@@ -240,14 +295,20 @@ public class HomeController : Controller
         rowsTable.Columns.Add("Name", typeof(string));
         rowsTable.Columns.Add("Dob", typeof(DateTime));
         rowsTable.Columns.Add("City", typeof(string));
+        
 
-        for (int i = 1; i <= 10000; i++)
+        if (id != null)
         {
-            rowsTable.Rows.Add(i, "John Doe" + " " + i, "1995/06/12", "New York");
+            rowsTable.Rows.Add(id, "John Doe" + " " + id, "1995/06/12", "New York");
         }
-
+        else
+        {
+            for (int i = 1; i <= 10000; i++)
+            {
+                rowsTable.Rows.Add(i, "John Doe" + " " + i, "1995/06/12", "New York");
+            }            
+        }
         dataSet.Tables.Add(rowsTable);
-
         return dataSet;
     }
 
